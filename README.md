@@ -23,9 +23,13 @@
 
 4. Укажите 
 DISCORD_TOKEN=your_discord_bot_token
-   RCON_HOST=your_minecraft_server_ip
-   RCON_PORT=your_rcon_port
-   RCON_PASSWORD=your_rcon_password
+
+RCON_HOST=your_minecraft_server_ip
+
+RCON_PORT=your_rcon_port
+
+RCON_PASSWORD=your_rcon_password
+
 В bot.py
 
 channel = self.bot.get_channel(1300176870368612463)
