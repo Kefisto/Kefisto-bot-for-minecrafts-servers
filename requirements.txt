@@ -1,2 +1,3 @@
-discord.py
-mcrcon
+discord.py==2.3.2
+python-dotenv==1.0.0
+mcrcon==0.7.0
