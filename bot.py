@@ -27,9 +27,9 @@ class MyBot(commands.Bot):
 bot = MyBot()
 
 # Настройки RCON
-RCON_HOST = '89.208.14.107'
-RCON_PORT = 24606
-RCON_PASSWORD = 'awjfawkjgawt'
+RCON_HOST = 'ip'
+RCON_PORT = port
+RCON_PASSWORD = 'password'
 
 # Путь к JSON файлу
 JSON_FILE = 'usernames.json'
@@ -173,7 +173,7 @@ async def on_connect():
 
 async def main():
     async with bot:
-        await bot.start('MTI5OTQ0MTI2NjY2ODMzOTI1MA.G37wU-.ssHGG8qxs96ArdQ5KhPM4bcdHCTuKY5CqXEpQc')
+        await bot.start('token')
 
 # Запуск бота
 if __name__ == "__main__":
