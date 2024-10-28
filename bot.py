@@ -22,6 +22,7 @@ class MyBot(commands.Bot):
 
     async def on_ready(self):
         print(f'Бот {self.user} готов к работе')
+
 # Создание экземпляра бота
 bot = MyBot()
 
@@ -35,6 +36,9 @@ JSON_FILE = 'usernames.json'
 
 # ID канала форума
 FORUM_CHANNEL_ID = 1287163565521899621
+
+# ID тега "принят"
+ACCEPTED_TAG_ID = 1287168204564861038
 
 async def update_whitelist():
     try:
@@ -59,21 +63,39 @@ async def update_whitelist():
 
 def extract_username(message_content):
     lines = message_content.split('\n')
-    for i, line in enumerate(lines):
-        if line.strip().startswith('2'):
-            if i + 2 < len(lines):  # Проверяем, есть ли третья строка
-                username_line = lines[i + 2].strip()  # Берем третью строку
-                # Удаляем символы типа '.' и ')'
-                username = ''.join(char for char in username_line if char not in '.)')
-                return username.strip()
+    if len(lines) >= 2:
+        # Берем вторую строку и удаляем лишние пробелы
+        second_line = lines[1].strip()
+        # Разбиваем строку по пробелам и берем последнее слово
+        parts = second_line.split()
+        if parts:
+            return parts[-1]  # Возвращаем последнее слово из второй строки
     return None
 
-async def process_thread(thread, usernames, accepted_tag_id):
+def extract_username(message_content):
+    lines = message_content.split('\n')
+    if len(lines) >= 2:
+        # Берем вторую строку и удаляем лишние пробелы
+        second_line = lines[1].strip()
+        # Разбиваем строку по пробелам
+        parts = second_line.split()
+        if len(parts) >= 2:
+            username = parts[1]  # Берем второе слово из второй строки
+        elif parts:
+            username = parts[0]  # Если есть только одно слово, берем его
+        else:
+            return None
+
+        # Удаляем нежелательные символы
+        username = username.replace('2)', '').replace(')', '').replace('.', '')
+        return username
+    return None
+async def process_thread(thread, usernames):
     message_count = 0
-    is_accepted = any(tag.id == accepted_tag_id for tag in thread.applied_tags)
+    is_accepted = any(tag.id == ACCEPTED_TAG_ID for tag in thread.applied_tags)
 
     if not is_accepted:
-        print(f"  Ветка не имеет тега 'принят', пропускаем")
+        print(f"  Ветка {thread.name} не имеет тега с ID {ACCEPTED_TAG_ID}, пропускаем")
         return
 
     async for message in thread.history(limit=None):
@@ -82,17 +104,13 @@ async def process_thread(thread, usernames, accepted_tag_id):
         if username:
             usernames.add(username)
             print(f"  Найден принятый ник: {username}")
-    print(f"  Обработано сообщений в ветке: {message_count}")
+
+    print(f"  Обработано сообщений в ветке {thread.name}: {message_count}")
 
 async def scan_forum_channel(bot):
     forum_channel = bot.get_channel(FORUM_CHANNEL_ID)
     if not forum_channel:
         print(f"Ошибка: канал с ID {FORUM_CHANNEL_ID} не найден")
-        return
-
-    accepted_tag = discord.utils.get(forum_channel.available_tags, name="принят")
-    if not accepted_tag:
-        print("Ошибка: тег 'принят' не найден")
         return
 
     usernames = set()
@@ -101,7 +119,7 @@ async def scan_forum_channel(bot):
 
     for thread in threads:
         print(f"Обработка ветки: {thread.name}")
-        await process_thread(thread, usernames, accepted_tag.id)
+        await process_thread(thread, usernames)
 
     print(f"Всего найдено уникальных ников: {len(usernames)}")
 
@@ -111,35 +129,12 @@ async def scan_forum_channel(bot):
     print(f"Ники сохранены в файл {JSON_FILE}")
     await update_whitelist()
 
-@bot.tree.command(name="addtowhitelist", description="Добавить игрока в вайтлист")
-@app_commands.describe(username="Никнейм игрока для добавления в вайтлист")
-async def add_to_whitelist(interaction: discord.Interaction, username: str):
-    await interaction.response.defer(ephemeral=True)
-    try:
-        with open(JSON_FILE, 'r', encoding='utf-8') as f:
-            usernames = json.load(f)
-
-        if username in usernames:
-            await interaction.followup.send(f"Игрок {username} уже в вайтлисте.", ephemeral=True)
-            return
-
-        usernames.append(username)
-
-        with open(JSON_FILE, 'w', encoding='utf-8') as f:
-            json.dump(usernames, f, ensure_ascii=False, indent=2)
-        with mcrcon.MCRcon(RCON_HOST, RCON_PASSWORD, RCON_PORT) as mcr:
-            response = mcr.command(f"easywl add {username}")
-            print(f"RCON: {response}")
-
-        await interaction.followup.send(f"Игрок {username} успешно добавлен в вайтлист.", ephemeral=True)
-    except Exception as e:
-        await interaction.followup.send(f"Произошла ошибка при добавлении игрока {username} в вайтлист: {str(e)}", ephemeral=True)
-
 @bot.tree.command(name="rescan", description="Повторное сканирование форума")
 async def rescan_command(interaction: discord.Interaction):
     await interaction.response.defer(ephemeral=True)
     await scan_forum_channel(bot)
     await interaction.followup.send("Сканирование завершено. Результаты сохранены и выведены в консоль. Вайтлист обновлен.", ephemeral=True)
+
 @bot.tree.command(name="removefromwhitelist", description="Удалить игрока из вайтлиста")
 @app_commands.describe(username="Никнейм игрока для удаления из вайтлиста")
 async def remove_from_whitelist(interaction: discord.Interaction, username: str):
@@ -182,5 +177,5 @@ async def main():
 
 # Запуск бота
 if __name__ == "__main__":
-    asyncio.run(main())        
-
+    asyncio.run(main())
+    
