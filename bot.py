@@ -173,7 +173,7 @@ async def on_connect():
 
 async def main():
     async with bot:
-        await bot.start('MTI5OTQ0MTI2NjY2ODMzOTI1MA.G37wU-.ssHGG8qxs96ArdQ5KhPM4bcdHCTuKY5CqXEpQc')
+        await bot.start('token')
 
 # Запуск бота
 if __name__ == "__main__":
