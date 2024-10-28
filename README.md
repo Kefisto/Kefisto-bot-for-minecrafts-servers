@@ -13,10 +13,10 @@
 ## Установка
 
 1. Клонируйте репозиторий:
-  git clone https://github.com/kefisto/discord-ticket-bot.git
+  git clone https://github.com/kefisto/Kefisto-bot-for-minecrafts-servers.git
 
 2. Перейдите в директорию проекта:
-   cd discord-ticket-bot
+   cd Kefisto-bot-for-minecrafts-servers
 
 3. Установите зависимости:z
    pip install -r requirements.txt
