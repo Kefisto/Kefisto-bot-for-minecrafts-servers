@@ -28,17 +28,17 @@ bot = MyBot()
 
 # Настройки RCON
 RCON_HOST = 'ip'
-RCON_PORT = port
+RCON_PORT = 25575 #port RCON
 RCON_PASSWORD = 'password'
 
 # Путь к JSON файлу
 JSON_FILE = 'usernames.json'
 
 # ID канала форума
-FORUM_CHANNEL_ID = 1287163565521899621
+FORUM_CHANNEL_ID = id
 
 # ID тега "принят"
-ACCEPTED_TAG_ID = 1287168204564861038
+ACCEPTED_TAG_ID = id
 
 async def update_whitelist():
     try:
@@ -173,9 +173,8 @@ async def on_connect():
 
 async def main():
     async with bot:
-        await bot.start('token')
+        await bot.start('TOKEN')
 
 # Запуск бота
 if __name__ == "__main__":
     asyncio.run(main())
-    
